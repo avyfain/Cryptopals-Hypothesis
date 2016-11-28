@@ -3,7 +3,7 @@ from itertools import repeat
 from hypothesis import given, assume
 from hypothesis.strategies import binary
 
-from ..cryptopals import fixed_xor
+from ..cryptopals.s1 import fixed_xor
 
 def test_challenge2():
     bs1 = bytes.fromhex("1c0111001f010100061a024b53535009181c")

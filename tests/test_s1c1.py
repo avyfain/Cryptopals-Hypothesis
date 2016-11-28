@@ -3,7 +3,7 @@ import base64
 from hypothesis import given, example
 from hypothesis.strategies import binary
 
-from ..cryptopals import hex_to_b64_bytes
+from ..cryptopals.s1 import hex_to_b64_bytes
 
 
 @given(binary())
