@@ -12,10 +12,9 @@ def test_challenge3():
     assert key == 'X'
 
 def snippets():
-    with open('tests/english_sample.txt', 'rb') as f:
+    with open('tests/data/english_sample.txt', 'rb') as f:
         text = f.read()
-    sentences = [sentence.strip() for sentence in text.split(b'.')
-                 if len(sentence.split(b' ')) > 7]
+    sentences = [s.strip() for s in text.split(b'.') if len(s.split(b' ')) > 7]
     return sentences
 
 @given(sampled_from(snippets()), sampled_from(ascii_uppercase), just(False))
@@ -23,7 +22,4 @@ def snippets():
 def test_finding_key(bs, key, is_example):
     xord = xor_against_single(bs, key)
     retrieved_key, score = get_single_xor_key(xord)
-    assert score < 0.25
-
-    if is_example:
-        assert retrieved_key == key
+    assert retrieved_key == key

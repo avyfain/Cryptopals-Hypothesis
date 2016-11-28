@@ -1,15 +1,15 @@
 import base64
 from collections import Counter
 from itertools import repeat
-from string import ascii_uppercase
+from string import printable
 
-eng_freqs = {'E': .01270, 'T': 0.0906, 'A': 0.0817, 'O': 0.0751,
-             'I': 0.0697, 'N': 0.0675, 'S': 0.0633, 'H': 0.0609,
-             'R': 0.0599, 'D': 0.0425, 'L': 0.0403, 'C': 0.0278,
-             'U': 0.0276, 'M': 0.0241, 'W': 0.0236, 'F': 0.0223,
-             'G': 0.0202, 'Y': 0.0197, 'P': 0.0193, 'B': 0.0129,
-             'V': 0.0098, 'K': 0.0077, 'J': 0.0015, 'X': 0.0015,
-             'Q': 0.0010, 'Z': 0.0007}
+eng_freqs = {'E': 12.70, 'T': 9.06, 'A': 8.17, 'O': 7.51,
+             'I': 6.97, 'N': 6.75, 'S': 6.33, 'H': 6.09,
+             'R': 5.99, 'D': 4.25, 'L': 4.03, 'C': 2.78,
+             'U': 2.76, 'M': 2.41, 'W': 2.36, 'F': 2.23,
+             'G': 2.02, 'Y': 1.97, 'P': 1.93, 'B': 1.29,
+             'V': 0.98, 'K': 0.77, 'J': 0.15, 'X': 0.15,
+             'Q': 0.10, 'Z': 0.07, ' ': 5}
 
 def hex_to_b64_bytes(given):
     return base64.b64encode(bytes.fromhex(given))
@@ -26,12 +26,15 @@ def xor_against_single(bs, c):
     return fixed_xor(bs, rep)
 
 def get_single_xor_key(bs):
-    denominator = float(len(bs))
+    denominator = len(bs)
     scores = {}
 
-    for c in ascii_uppercase:
-        counts = Counter(xor_against_single(bs, c).upper())
-        freqs = {chr(k): v / denominator for k, v in counts.items()}
+    for c in printable:
+        xord = xor_against_single(bs, c).upper()
+        counts = Counter(xord)
+        if b' ' not in xord:
+            continue
+        freqs = {chr(k): 100.0 * v / denominator for k, v in counts.items()}
         scores[c] = english_score(freqs)
 
     inc = min(scores, key=scores.get)
