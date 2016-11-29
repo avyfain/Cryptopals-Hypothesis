@@ -18,9 +18,9 @@ def test_hamming_example():
 def test_hamming_same(bs):
     assert hamming_dist(bs, bs) == 0
 
-@given(binary(), binary())
+@given(binary(min_size=1), binary(min_size=1))
 def test_hamming_different(bs1, bs2):
-    assume(len(bs1) == len(bs2) > 0)
+    assume(len(bs1) == len(bs2))
     assume(bs1 != bs2)
     assert hamming_dist(bs1, bs2) > 0
 
@@ -44,7 +44,7 @@ def test_challenge6():
     assert deciphered.startswith(b"I'm back")
 
 @slow
-@given(text())
+@given(text(min_size=3))
 def test_large(key):
     assume(len(key.strip()) > 2)
     assume(set(key).issubset(printable))

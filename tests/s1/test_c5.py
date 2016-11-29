@@ -14,8 +14,7 @@ def test_challenge5():
                    "d63343c2a26226324272765272a282b2f20430a652e2c652a" \
                    "3124333a653e2b2027630c692b20283165286326302e27282f"
 
-@given(binary(), text())
+@given(binary(), text(min_size=1))
 def test_inversion(bs, key):
-    assume(len(key) > 0)
     assume(all(c in printable for c in key))
     assert bs == repeating_key_xor(repeating_key_xor(bs, key), key)
