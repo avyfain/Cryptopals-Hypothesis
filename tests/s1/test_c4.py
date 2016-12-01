@@ -4,7 +4,7 @@
 from cryptopals.s1 import break_single_key_xor
 
 def data_generator():
-        with open('tests/data/s1c4data.txt', 'r') as f:
+        with open('tests/data/s1c4.txt', 'r') as f:
             for line in f:
                 yield line.strip()
 
