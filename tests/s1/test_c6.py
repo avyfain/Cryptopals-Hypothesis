@@ -55,7 +55,7 @@ def test_challenge6():
     assert deciphered.startswith(b"I'm back")
 
 @slow
-@given(text(min_size=3))
+@given(text(min_size=3, max_size=32))
 def test_large(key):
     assume(len(key.strip()) > 2)
     assume(set(key).issubset(printable))
