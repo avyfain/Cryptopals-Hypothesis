@@ -1,3 +1,5 @@
+import pytest
+
 from hypothesis import given, example
 from hypothesis.strategies import text, integers
 
@@ -8,3 +10,8 @@ from cryptopals.util import shortest_repeater
 def test_reps(s, i):
     pat = s * i
     assert shortest_repeater(s) == shortest_repeater(pat)
+
+slow = pytest.mark.skipif(
+    # pragma: no cover
+    not pytest.config.getoption("--slow"),
+    reason="need --runslow option to run")
