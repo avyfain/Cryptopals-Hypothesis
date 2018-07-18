@@ -25,14 +25,19 @@ from operator import itemgetter
 
 from cryptopals.util import eng_freqs
 
-def hex_to_b64_bytes(given):
+from typing import Iterator, List, Tuple, Union, Sequence, Iterable
+from typing import TypeVar, Optional, Iterator
+
+T = TypeVar('T')
+
+def hex_to_b64_bytes(given: str) -> bytes:
     """
     S1C1 - Convert hex to base64
     https://cryptopals.com/sets/1/challenges/1
     """
     return base64.b64encode(bytes.fromhex(given))
 
-def fixed_len_xor(bs1, bs2):
+def fixed_len_xor(bs1: bytes, bs2: bytes) -> bytes:
     """
     S1C2 - Fixed XOR
     https://cryptopals.com/sets/1/challenges/2
@@ -41,7 +46,7 @@ def fixed_len_xor(bs1, bs2):
     """
     return bytes(a ^ b for a, b in zip(bs1, bs2))
 
-def single_char_xor(bs, c):
+def single_char_xor(bs: bytes, c: str) -> bytes:
     """
     S1C3 - Single-byte XOR cipher
     https://cryptopals.com/sets/1/challenges/3
@@ -49,7 +54,7 @@ def single_char_xor(bs, c):
     rep = repeat(ord(c))
     return fixed_len_xor(bs, rep)
 
-def english_score(fragment, denominator=None):
+def english_score(fragment: bytes, denominator: Optional[int] = None) -> float:
     """
     S1C3 - Score plaintext's "english-ness"
     https://cryptopals.com/sets/1/challenges/3
@@ -65,7 +70,7 @@ def english_score(fragment, denominator=None):
              for k in eng_freqs}
     return sum(diffs.values())
 
-def break_single_char_xor(bs):
+def break_single_char_xor(bs: bytes) -> Tuple[str, float]:
     """
     S1C3 - Break single-byte XOR cipher
     https://cryptopals.com/sets/1/challenges/3
@@ -73,7 +78,7 @@ def break_single_char_xor(bs):
     Evaluate each output [of the english scoring function]
     and choose the one with the best score.
     """
-    inc, inc_score = None, 100
+    inc, inc_score = '', 100.0
 
     for c in printable:
         xord = single_char_xor(bs, c)
@@ -82,7 +87,7 @@ def break_single_char_xor(bs):
             inc, inc_score = c, candidate_score
     return inc, inc_score
 
-def repeating_key_xor(bs, key):
+def repeating_key_xor(bs: bytes, key: str) -> bytes:
     """
     S1C5 - Implement repeating-key XOR
     https://cryptopals.com/sets/1/challenges/5
@@ -92,7 +97,7 @@ def repeating_key_xor(bs, key):
     cyc = cycle((ord(c) for c in key))
     return fixed_len_xor(bs, cyc)
 
-def hamming_dist(bs1, bs2):
+def hamming_dist(bs1: bytes, bs2: bytes) -> int:
     """
     S1C6 - Break repeating-key XOR
     https://cryptopals.com/sets/1/challenges/6
@@ -104,7 +109,7 @@ def hamming_dist(bs1, bs2):
     """
     return sum(bin(v).count("1") for v in fixed_len_xor(bs1, bs2))
 
-def break_repeating_key_xor(bs, low=2, high=100):
+def break_repeating_key_xor(bs: bytes, low: int = 2, high: int = 100) -> str:
     """
     S1C6 - Break repeating-key XOR
     https://cryptopals.com/sets/1/challenges/6
@@ -120,7 +125,8 @@ def break_repeating_key_xor(bs, low=2, high=100):
     # make a block that is the first byte of every block,
     # and a block that is the second byte of every block, and so on.
     trans = zip_longest(*blocks)
-    clean_trans = ([char for char in block if char is not None] for block in trans)
+    clean_trans: Iterator[List[bytes]]
+    clean_trans= ([char for char in block if char is not None] for block in trans)
 
     # Solve each block as if it was single-character XOR.
     # For each block, the single-byte XOR key that produces the best looking
@@ -130,10 +136,11 @@ def break_repeating_key_xor(bs, low=2, high=100):
     # Put them together and you have the key.
     return ''.join(keyscore[0] for keyscore in single_keys)
 
-def chunks(bs, size):
-    return (bs[i:i + size] for i in range(0, len(bs), size))
+def chunks(c: Sequence[T], size: int) -> Iterator[Sequence[T]]:
+    yield from (c[i:i + size] for i in range(0, len(c), size))
 
-def brute_force_keysize_search(bs, low, high, num_blocks=5):
+
+def brute_force_keysize_search(bs: bytes, low: int, high: int, num_blocks: int = 5) -> int:
     """
     S1C6 - Break repeating-key XOR
     https://cryptopals.com/sets/1/challenges/6
@@ -160,7 +167,7 @@ def brute_force_keysize_search(bs, low, high, num_blocks=5):
         key_size_scores.append((keysize, avg_norm_distance / keysize))
     return min(key_size_scores, key=itemgetter(1))[0]
 
-def detect_ecb(bs, blocksize=16):
+def detect_ecb(bs: bytes, blocksize: int = 16) -> bool:
     """
     S1C6 - Detect AES in ECB mode
     https://cryptopals.com/sets/1/challenges/6

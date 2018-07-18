@@ -21,9 +21,11 @@ from Crypto.Cipher import AES
 
 from cryptopals.s1 import fixed_len_xor, chunks, detect_ecb
 
-def pkcs7pad(bs, blocksize=None):
+from typing import Optional, Tuple
+
+def pkcs7pad(bs: bytes, blocksize: Optional[int] = None) -> bytes:
     """
-    S1C09 - Implement PKCS#7 padding
+    S2C09 - Implement PKCS#7 padding
     https://cryptopals.com/sets/2/challenges/9
 
     A block cipher transforms a fixed-sized block (usually 8 or 16 bytes) of plaintext into ciphertext.
@@ -45,7 +47,7 @@ def pkcs7pad(bs, blocksize=None):
     numpad = blocksize - missing
     return bs + bytes([numpad])*numpad
 
-def pkcs7unpad(bs):
+def pkcs7unpad(bs: bytes) -> bytes:
     """
     A simple reverse operation.
     We look up the last value to tell how many bytes to remove.
@@ -53,9 +55,9 @@ def pkcs7unpad(bs):
     num_bytes = bs[-1]
     return bs[:-num_bytes]
 
-def ecb_encrypt(bs, key):
+def ecb_encrypt(bs: bytes, key: bytes) -> bytes:
     """
-    S1C09 - Implement CBC mode
+    S2C09 - Implement CBC mode
     https://cryptopals.com/sets/2/challenges/9
 
     Implement CBC mode by hand by taking the ECB function you wrote earlier,
@@ -66,9 +68,9 @@ def ecb_encrypt(bs, key):
     cipher = AES.new(key, AES.MODE_ECB)
     return cipher.encrypt(padded_bs)
 
-def cbc_encrypt(bs, key, iv=None):
+def cbc_encrypt(bs: bytes, key: bytes, iv: Optional[bytes] = None) -> bytes:
     """
-    S1C10 - Implement CBC mode
+    S2C10 - Implement CBC mode
     https://cryptopals.com/sets/2/challenges/10
 
     CBC mode is a block cipher mode that allows us to encrypt irregularly-sized messages,
@@ -99,7 +101,7 @@ def cbc_encrypt(bs, key, iv=None):
         ciphertext += cipherblock
     return ciphertext
 
-def cbc_decrypt(bs, key, iv=None):
+def cbc_decrypt(bs: bytes, key: bytes, iv: Optional[bytes] = None) -> bytes:
     """
     Simple inverse, assuming we have the key, and possibly the IV.
     """
@@ -114,9 +116,9 @@ def cbc_decrypt(bs, key, iv=None):
         iv = cipherblock
     return pkcs7unpad(plaintext)
 
-def encryption_oracle(bs, blocksize=16):
+def encryption_oracle(bs: bytes, blocksize: int =16) -> Tuple[bytes, str]:
     """
-    S1C11 - An ECB/CBC detection oracle
+    S2C11 - An ECB/CBC detection oracle
     https://cryptopals.com/sets/2/challenges/11
 
     We return what we did for testability only.
@@ -138,22 +140,25 @@ def encryption_oracle(bs, blocksize=16):
         iv = os.urandom(blocksize)
         return cbc_encrypt(inp, key, iv), 'cbc'
 
-def oracle_builder(key, unknown):
+class Oracle:
     """
-    S1C11 - Byte-at-a-time ECB decryption (Simple)
+    S2C12 - Byte-at-a-time ECB decryption (Simple)
     https://cryptopals.com/sets/2/challenges/12
 
     What you have now is a function that produces:
     AES-128-ECB(your-string || unknown-string, random-key)
     """
-    def _oracle(bs):
-        plaintext = pkcs7pad(bs + unknown)
-        return ecb_encrypt(bs + unknown, key)
-    return _oracle
+    def __init__(self, key: bytes, unknown: bytes) -> None:
+        self.key: bytes = key
+        self.unknown: bytes = unknown
 
-def guess_blocksize(oracle):
+    def __call__(self, bs):
+        plaintext = pkcs7pad(bs + self.unknown)
+        return ecb_encrypt(bs + self.unknown, self.key)
+
+def guess_blocksize(oracle: Oracle) -> int:
     """
-    S1C11 - Byte-at-a-time ECB decryption (Simple)
+    S2C12 - Byte-at-a-time ECB decryption (Simple)
     https://cryptopals.com/sets/2/challenges/12
 
     Feed identical bytes of your-string to the function 1 at a time
@@ -165,10 +170,11 @@ def guess_blocksize(oracle):
         cur_len = len(oracle(b'A'*size_guess))
         if cur_len > init_len:
             return cur_len - init_len
+    return -1
 
-def guess_unknown_string_size(oracle):
+def guess_unknown_string_size(oracle: Oracle) -> int:
     """
-    S1C11 - Byte-at-a-time ECB decryption (Simple)
+    S2C12 - Byte-at-a-time ECB decryption (Simple)
     https://cryptopals.com/sets/2/challenges/12
 
     Find out how long the unkown string is.
@@ -178,10 +184,11 @@ def guess_unknown_string_size(oracle):
         cur_len = len(oracle(b'A'*guess))
         if cur_len != init_len:
             return init_len - guess
+    return -1
 
-def break_ecb(oracle):
+def break_ecb(oracle: Oracle) -> bytes:
     """
-    S1C11 - Byte-at-a-time ECB decryption (Simple)
+    S2C12 - Byte-at-a-time ECB decryption (Simple)
     https://cryptopals.com/sets/2/challenges/12
 
     Knowing the block size, craft an input block that is exactly 1 byte short

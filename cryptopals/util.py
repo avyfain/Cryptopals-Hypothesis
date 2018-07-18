@@ -11,7 +11,7 @@ eng_freqs = {'E': 12.70, 'T': 9.06, 'A': 8.17, 'O': 7.51,
              'Q': 0.10, 'Z': 0.07, ' ': 2}
 
 
-def shortest_repeater(s):
+def shortest_repeater(s: str) -> str:
     # Taken from Stack Overflow, by Buge
     # https://stackoverflow.com/questions/6021274/finding-shortest-repeating-cycle-in-word/33864413#33864413
     if not s:
